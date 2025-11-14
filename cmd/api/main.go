@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/diiineeei/neoway-backend/internal/adapter/output/kafka"
 	"github.com/diiineeei/neoway-backend/internal/adapter/output/mongodb"
 	"github.com/diiineeei/neoway-backend/internal/application/usecase"
+	"github.com/diiineeei/neoway-backend/pkg/env"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,11 +28,10 @@ import (
 // @host            localhost:8080
 // @BasePath        /
 func main() {
-	mongoURI := getEnv("MONGODB_URI", "mongodb://mongodb:27017")
-	mongoDatabase := getEnv("MONGODB_DATABASE", "neoway")
-	kafkaBrokers := getEnv("KAFKA_BROKERS", "localhost:9092")
-	kafkaTopic := getEnv("KAFKA_TOPIC", "orders")
-	port := getEnv("PORT", "8080")
+	mongoURI := env.GetString("MONGODB_URI", "mongodb://mongodb:27017")
+	mongoDatabase := env.GetString("MONGODB_DATABASE", "neoway")
+	kafkaTopic := env.GetString("KAFKA_TOPIC", "orders")
+	port := env.GetString("PORT", "8080")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -57,7 +56,7 @@ func main() {
 	orderRepository := mongodb.NewOrderRepositoryAdapterFromCollection(orderCollection)
 
 	// Inicializa Kafka Publisher
-	brokers := strings.Split(kafkaBrokers, ",")
+	brokers := env.GetStringSlice("KAFKA_BROKERS", []string{"localhost:9092"}, ",")
 	kafkaPublisher := kafka.NewMessagePublisherAdapter(kafka.Config{
 		Brokers: brokers,
 		Topic:   kafkaTopic,
@@ -111,13 +110,4 @@ func main() {
 	}
 
 	log.Println("Server exited")
-}
-
-// getEnv retorna o valor da variável de ambiente ou o valor padrão.
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
 }

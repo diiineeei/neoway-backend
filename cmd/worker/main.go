@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -14,15 +13,15 @@ import (
 	"github.com/diiineeei/neoway-backend/internal/adapter/output/mongodb"
 	"github.com/diiineeei/neoway-backend/internal/application/usecase"
 	"github.com/diiineeei/neoway-backend/internal/domain/port"
+	"github.com/diiineeei/neoway-backend/pkg/env"
 )
 
 func main() {
 	// Configurações a partir de variáveis de ambiente
-	mongoURI := getEnv("MONGODB_URI", "mongodb://mongodb:27017")
-	mongoDatabase := getEnv("MONGODB_DATABASE", "neoway")
-	kafkaBrokers := getEnv("KAFKA_BROKERS", "localhost:9092")
-	kafkaTopic := getEnv("KAFKA_TOPIC", "orders")
-	kafkaGroupID := getEnv("KAFKA_GROUP_ID", "neoway-workers")
+	mongoURI := env.GetString("MONGODB_URI", "mongodb://mongodb:27017")
+	mongoDatabase := env.GetString("MONGODB_DATABASE", "neoway")
+	kafkaTopic := env.GetString("KAFKA_TOPIC", "orders")
+	kafkaGroupID := env.GetString("KAFKA_GROUP_ID", "neoway-workers")
 
 	// Inicializa MongoDB
 	mongoConn, err := mongodb.NewConnection(mongodb.Config{
@@ -38,7 +37,7 @@ func main() {
 	log.Println("✓ Successfully connected to MongoDB")
 
 	// Inicializa Kafka Consumer
-	brokers := strings.Split(kafkaBrokers, ",")
+	brokers := env.GetStringSlice("KAFKA_BROKERS", []string{"localhost:9092"}, ",")
 	kafkaConsumer := kafka.NewMessageConsumerAdapter(kafka.Config{
 		Brokers: brokers,
 		Topic:   kafkaTopic,
@@ -105,13 +104,4 @@ func createMessageHandler(processOrderUseCase *usecase.ProcessOrderUseCase) func
 		log.Printf("✓ Order %s processed successfully", msg.OrderID)
 		return nil
 	}
-}
-
-// getEnv retorna o valor da variável de ambiente ou o valor padrão.
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
 }
