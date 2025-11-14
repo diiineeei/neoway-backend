@@ -1,0 +1,95 @@
+### Variáveis
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Criar Pedido - Notebook
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Notebook Dell Inspiron",
+  "quantity": 2
+}
+
+### Criar Pedido - Mouse Gamer
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Mouse Gamer Razer",
+  "quantity": 5
+}
+
+### Criar Pedido - Teclado Mecânico
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Teclado Mecânico Keychron K2",
+  "quantity": 1
+}
+
+### Criar Pedido - Monitor
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Monitor LG UltraWide 34\"",
+  "quantity": 3
+}
+
+### Criar Pedido - Webcam
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Webcam Logitech C920",
+  "quantity": 10
+}
+
+### ❌ Erro: Produto vazio (deve retornar 400)
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "",
+  "quantity": 1
+}
+
+### ❌ Erro: Sem produto (deve retornar 400)
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "quantity": 1
+}
+
+### ❌ Erro: Quantidade zero (deve retornar 400)
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Produto Teste",
+  "quantity": 0
+}
+
+### ❌ Erro: Quantidade negativa (deve retornar 400)
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Produto Teste",
+  "quantity": -5
+}
+
+### ❌ Erro: JSON inválido (deve retornar 400)
+POST {{baseUrl}}/orders
+Content-Type: {{contentType}}
+
+{
+  "product": "Teste"
+  "quantity": 1
+}

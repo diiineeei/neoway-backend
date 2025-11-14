@@ -1,0 +1,19 @@
+FROM golang:1.25.4-alpine AS builder
+RUN apk add --no-cache git ca-certificates tzdata
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN swag init -g cmd/api/main.go -o docs
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags='-w -s -extldflags "-static"' \
+    -a -o api ./cmd/api
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /app
+COPY --from=builder /build/api /api
+EXPOSE 8080
+USER 65534:65534
+ENTRYPOINT ["/api"]
